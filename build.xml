@@ -83,7 +83,7 @@ description: "${description}"
 lucee-core-version: "${luceeCoreVersion}"
 release-type: ${releaseType}
 start-bundles: false
-resource: "[{'class':'${class}','bundleName':'${bundlename}','bundleVersion':'${bundleversion}${build.number}${appendix}','scheme':'s3','lock-timeout':'10000'}]"
+resource: "[{'class':'${class}','bundleName':'${bundlename}','bundleVersion':'${bundleversion}${build.number}${appendix}','scheme':'smb','lock-timeout':'10000'}]"
 </echo>
   </target>
   
@@ -121,15 +121,7 @@ resource: "[{'class':'${class}','bundleName':'${bundlename}','bundleVersion':'${
     <echo message="${content3}" file="${dist}/extension/tlds/pdftag.tld"/>
     -->
 
-    <!-- copy the flds necessary -->
-    <loadfile property="c1" srcFile="${fld}/function.fld" />
-    <replace haystack="${c1}" needle="{bundle-name}" repl="${bundlename}" property="c2"/>
-    <replace haystack="${c2}" needle="{bundle-version}" repl="${bundleversion}${build.number}${appendix}" property="c3"/>
-    <echo message="${c3}" file="${dist}/extension/flds/s3-functions.fld"/>
-
-
-
-    <!-- copy the context necessary
+        <!-- copy the context necessary
     <copy todir="${dist}/extension/webcontexts">
       <fileset dir="${context}">
         <include name="**/*.*"/>
