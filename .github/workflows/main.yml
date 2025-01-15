@@ -10,7 +10,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      luceeVersion: light-6.0.0.218-SNAPSHOT
+      luceeVersion: light-6.2.0.284-RC
     services:
       samba:
        image: dperson/samba
@@ -18,14 +18,14 @@ jobs:
         - 139:139
         - 445:445
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up JDK 11
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v4
       with:
         java-version: '11'
         distribution: 'adopt'
     - name: Cache Maven packages
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.m2
         key: lucee-smb
@@ -33,7 +33,7 @@ jobs:
           ${{ runner.os }}-m2
           maven-cache
     - name: Cache Lucee files
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: _actions/lucee/lucee-script-engine-runner/main/lucee-download-cache
         key: lucee-downloads-${{ env.luceeVersion }}
@@ -42,12 +42,12 @@ jobs:
     - name: Build extension-smb with Ant
       run: ant -noinput -verbose -buildfile build.xml
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: smb-lex
         path: dist/*.lex
     - name: Checkout Lucee
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: lucee/lucee
         path: lucee
