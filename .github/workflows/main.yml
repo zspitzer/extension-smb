@@ -1,63 +1,72 @@
-# This workflow will build a Java project with Ant
-# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-ant
-
 name: Java CI
 
-on: [push, pull_request,workflow_dispatch]
- 
-jobs:
-  build:
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
 
+jobs:
+  build-and-test:
     runs-on: ubuntu-latest
-    env:
-      luceeVersion: light-6.2.0.284-RC
+    strategy:
+      fail-fast: false
+      matrix:
+        lucee: ${{ fromJSON(vars.LUCEE_TEST_VERSIONS_PLUS) }}
     services:
       samba:
-       image: dperson/samba
-       ports:
-        - 139:139
-        - 445:445
+        image: dperson/samba
+        ports:
+          - 139:139
+          - 445:445
+        env:
+          USER: "smbuser;smbpass"
+          SHARE: "public;/share;yes;no;no;all"
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 11
-      uses: actions/setup-java@v4
-      with:
-        java-version: '11'
-        distribution: 'adopt'
-    - name: Cache Maven packages
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2
-        key: lucee-smb
-        restore-keys: |
-          ${{ runner.os }}-m2
-          maven-cache
-    - name: Cache Lucee files
-      uses: actions/cache@v4
-      with:
-        path: _actions/lucee/lucee-script-engine-runner/main/lucee-download-cache
-        key: lucee-downloads-${{ env.luceeVersion }}
-        restore-keys: |
-          lucee-downloads
-    - name: Build extension-smb with Ant
-      run: ant -noinput -verbose -buildfile build.xml
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: smb-lex
-        path: dist/*.lex
-    - name: Checkout Lucee
-      uses: actions/checkout@v4
-      with:
-        repository: lucee/lucee
-        path: lucee
-    - name: Run Lucee Test Suite, labels="smb"
-      uses: lucee/script-runner@main
-      with:
-        webroot: ${{ github.workspace }}/lucee/test
-        execute: /bootstrap-tests.cfm
-        luceeVersion: ${{ env.luceeVersion }}
-        extensionDir: ${{ github.workspace }}/dist
-      env:
-        testLabels: smb
-        testAdditional: ${{ github.workspace }}/tests
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-smb
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Cache Lucee files
+        uses: actions/cache@v4
+        with:
+          path: ~/work/_actions/lucee/script-runner/main/lucee-download-cache
+          key: lucee-downloads
+
+      - name: Build extension-smb with Ant
+        run: ant -noinput -buildfile build.xml
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: smb-lex-${{ matrix.lucee.version }}
+          path: dist/*.lex
+
+      - name: Checkout Lucee
+        uses: actions/checkout@v4
+        with:
+          repository: lucee/lucee
+          path: lucee
+
+      - name: Run Lucee Test Suite
+        uses: lucee/script-runner@main
+        with:
+          webroot: ${{ github.workspace }}/lucee/test
+          execute: /bootstrap-tests.cfm
+          luceeVersion: ${{ matrix.lucee.version }}
+          luceeVersionQuery: ${{ matrix.lucee.query }}
+          extensionDir: ${{ github.workspace }}/dist
+        env:
+          testLabels: smb
+          testAdditional: ${{ github.workspace }}/tests

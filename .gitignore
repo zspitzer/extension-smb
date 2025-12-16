@@ -10,3 +10,5 @@ target/*
 *.lock
 *.DS_Store
 temp
+/test-output
+/.claude

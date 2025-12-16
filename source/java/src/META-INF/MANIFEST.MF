@@ -1,4 +1,6 @@
 Manifest-Version: 1.0
-Export-Package: org.lucee.extension.resource.smb,
- org.lucee.extension.resource.smb.function
+Export-Package: org.lucee.extension.resource,
+ org.lucee.extension.resource.smb
 Bundle-ManifestVersion: 2
+Require-Bundle: jcifs;bundle-version=3.0.0,
+ bcprov;bundle-version=1.80

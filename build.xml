@@ -91,18 +91,18 @@ resource: "[{'class':'${class}','bundleName':'${bundlename}','bundleVersion':'${
 
   <target name="compile" depends="copy"
         description="compile the source " >
-    <!-- Compile ACF-Infinspan source -->
-    <javac srcdir="${temp}" source="1.8" target="1.8" destdir="${build}" debug="true" debuglevel="lines,vars,source">
+    <!-- Compile source -->
+    <javac srcdir="${temp}" source="17" target="17" destdir="${build}" debug="true" debuglevel="lines,vars,source">
       <classpath refid="classpath" />
     </javac>
   </target>
 
   <target name="dist" depends="compile"
         description="generate the distribution" >
-    
- 
+
+
     <!-- Put everything in ${build} into .jar file -->
-    <jar 
+    <jar
     	jarfile="${dist}/extension/jars/${filename}-${bundleversion}${build.number}${appendix}.jar" basedir="${build}"  manifest="${src}/META-INF/MANIFEST.MF">
       <manifest>
         <attribute name="Bundle-Version" value="${bundleversion}${build.number}${appendix}"/>
@@ -112,36 +112,112 @@ resource: "[{'class':'${class}','bundleName':'${bundlename}','bundleVersion':'${
       </manifest>
     </jar>
 
+    <!-- Create OSGi bundle from jcifs-3.0.0.jar (which lacks OSGi headers) -->
+    <mkdir dir="${temp}/osgi-jcifs"/>
+    <unzip src="${lib}/jcifs-3.0.0.jar" dest="${temp}/osgi-jcifs">
+      <patternset>
+        <exclude name="META-INF/MANIFEST.MF"/>
+      </patternset>
+    </unzip>
 
+    <!-- Create OSGi manifest for jcifs -->
+    <echo file="${temp}/osgi-jcifs/META-INF/MANIFEST.MF">Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: jcifs
+Bundle-Name: JCIFS SMB Client Library
+Bundle-Version: 3.0.0
+Bundle-Description: OSGi bundle for JCIFS SMB client library
+Bundle-Vendor: Lucee Association Switzerland
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Require-Bundle: bcprov;bundle-version=1.80
+Export-Package: org.codelibs.jcifs.smb;version="3.0.0",
+ org.codelibs.jcifs.smb.config;version="3.0.0",
+ org.codelibs.jcifs.smb.context;version="3.0.0",
+ org.codelibs.jcifs.smb.impl;version="3.0.0",
+ org.codelibs.jcifs.smb.netbios;version="3.0.0",
+ org.codelibs.jcifs.smb.ntlmssp;version="3.0.0",
+ org.codelibs.jcifs.smb.ntlmssp.av;version="3.0.0",
+ org.codelibs.jcifs.smb.dcerpc;version="3.0.0",
+ org.codelibs.jcifs.smb.dcerpc.msrpc;version="3.0.0",
+ org.codelibs.jcifs.smb.dcerpc.ndr;version="3.0.0",
+ org.codelibs.jcifs.smb.util;version="3.0.0",
+ org.codelibs.jcifs.smb.util.transport;version="3.0.0",
+ org.codelibs.jcifs.smb.spnego;version="3.0.0",
+ org.codelibs.jcifs.smb.pac;version="3.0.0",
+ org.codelibs.jcifs.smb.pac.kerberos;version="3.0.0",
+ org.codelibs.jcifs.smb.internal;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.dfs;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.dtyp;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.fscc;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.util;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb1;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb1.com;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb1.net;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb1.trans;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb1.trans.nt;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb1.trans2;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb2;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb2.create;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb2.info;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb2.io;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb2.ioctl;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb2.lock;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb2.nego;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb2.notify;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb2.session;version="3.0.0",
+ org.codelibs.jcifs.smb.internal.smb2.tree;version="3.0.0",
+ org.codelibs.jcifs.smb.http;version="3.0.0",
+ org.codelibs.jcifs.smb.https;version="3.0.0",
+ org.codelibs.jcifs.smb1;version="3.0.0",
+ org.codelibs.jcifs.smb1.dcerpc;version="3.0.0",
+ org.codelibs.jcifs.smb1.dcerpc.msrpc;version="3.0.0",
+ org.codelibs.jcifs.smb1.dcerpc.ndr;version="3.0.0",
+ org.codelibs.jcifs.smb1.http;version="3.0.0",
+ org.codelibs.jcifs.smb1.https;version="3.0.0",
+ org.codelibs.jcifs.smb1.netbios;version="3.0.0",
+ org.codelibs.jcifs.smb1.ntlmssp;version="3.0.0",
+ org.codelibs.jcifs.smb1.util;version="3.0.0",
+ org.codelibs.jcifs.smb1.util.transport;version="3.0.0"
+Import-Package: javax.crypto;resolution:=optional,
+ javax.crypto.spec;resolution:=optional,
+ javax.naming;resolution:=optional,
+ javax.net;resolution:=optional,
+ javax.net.ssl;resolution:=optional,
+ javax.security.auth;resolution:=optional,
+ javax.security.auth.callback;resolution:=optional,
+ javax.security.auth.kerberos;resolution:=optional,
+ javax.security.auth.login;resolution:=optional,
+ javax.security.auth.x500;resolution:=optional,
+ javax.servlet;resolution:=optional,
+ javax.servlet.http;resolution:=optional,
+ org.bouncycastle.asn1;resolution:=optional,
+ org.bouncycastle.jce.provider;resolution:=optional,
+ org.ietf.jgss;resolution:=optional,
+ org.slf4j;resolution:=optional;version="[1.6,3)"
+</echo>
 
-    <!-- copy the tlds necessary 
-    <loadfile property="content1" srcFile="${tld}/tag.tld" />
-    <replace haystack="${content1}" needle="{bundle-name}" repl="${bundlename}" property="content2"/>
-    <replace haystack="${content2}" needle="{bundle-version}" repl="${bundleversion}${build.number}${appendix}" property="content3"/>
-    <echo message="${content3}" file="${dist}/extension/tlds/pdftag.tld"/>
-    -->
+    <!-- Create the OSGi bundle JAR -->
+    <jar destfile="${dist}/extension/jars/jcifs-3.0.0.jar"
+         basedir="${temp}/osgi-jcifs"
+         manifest="${temp}/osgi-jcifs/META-INF/MANIFEST.MF"/>
 
-        <!-- copy the context necessary
-    <copy todir="${dist}/extension/webcontexts">
-      <fileset dir="${context}">
-        <include name="**/*.*"/>
-      </fileset>
-    </copy> -->
+    <!-- Clean up temp directory -->
+    <delete dir="${temp}/osgi-jcifs"/>
 
-    <!-- copy the jars necessary -->
+    <!-- copy the jars necessary (excluding jcifs since we created our own OSGi version) -->
     <copy todir="${dist}/extension/jars">
       <fileset dir="${lib}">
         <include name="**/*.jar"/>
         <exclude name="**/javax.*"/>
         <exclude name="**/jsp-*"/>
         <exclude name="**/lucee.jar"/>
+        <exclude name="**/jaxb-api-*"/>
         <exclude name="**/org.apache.felix.framework-*"/>
+        <exclude name="**/jcifs-*.jar"/>
 
         <!-- we exclude this because this is part of the Lucee core and in worst case it is loaded on the fly -->
         <exclude name="**/httpcomponents-*"/>
         <exclude name="**/org.lucee.httpcomponents.*"/>
-        <!-- <exclude name="**/org.apache.commons.codec-*"/> -->
-        <exclude name="**/commons-codec-*"/>
         <exclude name="**/log4j-*"/>
         <exclude name="**/javax-mail-activation-*"/>
       </fileset>
