@@ -11,7 +11,28 @@ on:
         default: '[{"version":"","query":"6/stable/light"},{"version":"","query":"7.0/stable/light"}]'
 
 jobs:
-  build-and-test:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build extension-smb with Ant
+        run: ant -noinput -buildfile build.xml
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: smb-lex
+          path: dist/*.lex
+
+  test:
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -35,13 +56,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Cache Maven packages
-        uses: actions/cache@v4
+      - name: Download extension artifact
+        uses: actions/download-artifact@v4
         with:
-          path: ~/.m2
-          key: ${{ runner.os }}-maven-smb
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          name: smb-lex
+          path: dist
 
       - name: Cache Lucee files
         uses: actions/cache@v4
@@ -62,14 +81,13 @@ jobs:
             sleep 2
           done
 
-      - name: Build extension-smb with Ant
-        run: ant -noinput -buildfile build.xml
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: smb-lex-${{ matrix.lucee.query || matrix.lucee.version }}
-          path: dist/*.lex
+      - name: Fix Samba share permissions
+        run: |
+          docker ps
+          CONTAINER_ID=$(docker ps -q --filter "ancestor=dperson/samba")
+          echo "Samba container: $CONTAINER_ID"
+          docker exec $CONTAINER_ID sh -c 'chown 1000:1000 /share && chmod 777 /share'
+          echo "Permissions fixed"
 
       - name: Checkout Lucee
         uses: actions/checkout@v4
