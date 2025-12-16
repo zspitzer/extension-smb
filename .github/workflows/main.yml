@@ -49,13 +49,26 @@ jobs:
           path: ~/work/_actions/lucee/script-runner/main/lucee-download-cache
           key: lucee-downloads
 
+      - name: Wait for Samba to be ready
+        run: |
+          echo "Waiting for Samba to start..."
+          for i in {1..30}; do
+            if nc -z localhost 445 2>/dev/null; then
+              echo "Samba port 445 is open!"
+              sleep 5
+              break
+            fi
+            echo "Attempt $i: Samba not ready yet, waiting..."
+            sleep 2
+          done
+
       - name: Build extension-smb with Ant
         run: ant -noinput -buildfile build.xml
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: smb-lex-${{ matrix.lucee.version }}
+          name: smb-lex-${{ matrix.lucee.query || matrix.lucee.version }}
           path: dist/*.lex
 
       - name: Checkout Lucee
